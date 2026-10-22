@@ -83,34 +83,73 @@ def edge_detect(image):
         [clamp(abs(gx[r][c]) + abs(gy[r][c])) for c in range(len(image[0]))]
         for r in range(len(image))
     ]
+
  
  
+def ask_number(prompt):
+    while True:
+        try:
+            return int(input(prompt))
+        except ValueError:
+            print("Please enter a whole number.\n")
+
+
+def print_commands():
+    print("Commands: invert, brightness, threshold, hflip, vflip, rotate, crop, blur, edge, exit\n")
+
+
 def main():
     original = make_image()
-    snapshot = [row[:] for row in original]
- 
     show("ORIGINAL IMAGE", original)
- 
-    print("=== PIXEL-WISE OPERATIONS ===\n")
-    show("Invert (255 - pixel)", invert(original))
-    show("Brightness +60 (capped at 255)", adjust_brightness(original, 60))
-    show("Brightness -60 (floored at 0)", adjust_brightness(original, -60))
-    show("Threshold at 100 (>= 100 becomes 255, else 0)", threshold(original, 100))
- 
-    print("=== GEOMETRIC OPERATIONS ===\n")
-    show("Flip horizontal (left <-> right)", flip_horizontal(original))
-    show("Flip vertical (top <-> bottom)", flip_vertical(original))
-    show("Rotate 90 degrees clockwise", rotate_90_clockwise(original))
-    show("Crop: top=1, left=1, height=3, width=3", crop(original, 1, 1, 3, 3))
- 
-    print("=== NEIGHBORHOOD OPERATIONS (3x3 kernel, edge pixels repeated at borders) ===\n")
-    show("Box blur", box_blur(original))
-    show("Edge detection (Sobel)", edge_detect(original))
- 
-    print("=== ORIGINAL UNCHANGED CHECK ===\n")
-    show("Original after all operations", original)
-    print("Original unchanged:", original == snapshot)
- 
+    print_commands()
+
+    while True:
+        command = input("Enter a command: ").strip().lower()
+        print()
+
+        match command:
+            case "invert":
+                result = invert(original)
+                title = "Invert"
+            case "brightness":
+                amount = ask_number("Brightness amount (for example 60 or -60): ")
+                result = adjust_brightness(original, amount)
+                title = f"Brightness {amount}"
+            case "threshold":
+                cutoff = ask_number("Threshold cutoff (0-255): ")
+                result = threshold(original, cutoff)
+                title = f"Threshold at {cutoff}"
+            case "hflip":
+                result = flip_horizontal(original)
+                title = "Flip horizontal"
+            case "vflip":
+                result = flip_vertical(original)
+                title = "Flip vertical"
+            case "rotate":
+                result = rotate_90_clockwise(original)
+                title = "Rotate 90 clockwise"
+            case "crop":
+                top = ask_number("Top row: ")
+                left = ask_number("Left column: ")
+                height = ask_number("Height: ")
+                width = ask_number("Width: ")
+                result = crop(original, top, left, height, width)
+                title = "Crop"
+            case "blur":
+                result = box_blur(original)
+                title = "Box blur"
+            case "edge":
+                result = edge_detect(original)
+                title = "Edge detection"
+            case "exit" | "quit":
+                break
+            case _:
+                print("Unknown command.\n")
+                print_commands()
+                continue
+
+        show("BEFORE", original)
+        show(f"AFTER: {title}", result)
  
 if __name__ == "__main__":
     main()
